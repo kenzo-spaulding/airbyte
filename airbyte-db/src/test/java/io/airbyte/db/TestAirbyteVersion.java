@@ -48,6 +48,22 @@ public class TestAirbyteVersion {
   }
 
   @Test
+  public void testParseVersionInvalidFormat() {
+    final AirbyteVersion version = new AirbyteVersion("6-b-8");
+    assertEquals("6", version.getMajorVersion());
+    assertEquals("", version.getMinorVersion());
+    assertEquals("", version.getPatchVersion());
+  }
+
+  @Test
+  public void testParseVersionNonNumeric() {
+    final AirbyteVersion version = new AirbyteVersion("a.b.8");
+    assertEquals("a", version.getMajorVersion());
+    assertEquals("b", version.getMinorVersion());
+    assertEquals("8", version.getPatchVersion());
+  }
+
+  @Test
   public void testCompareSameVersionsDifferentLabels() {
     assertEquals(0, new AirbyteVersion("6.7.8-omega").compareTo(new AirbyteVersion("6.7.8-gamma")));
   }
@@ -63,8 +79,73 @@ public class TestAirbyteVersion {
   }
 
   @Test
+  public void testCompareDifferentMinorVersionsNeg() {
+    assertEquals(1, new AirbyteVersion("6.8.0-alpha").compareTo(new AirbyteVersion("6.-7.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentMinorVersionsMajorNeg() {
+    assertEquals(0, new AirbyteVersion("-6.8.0-alpha").compareTo(new AirbyteVersion("-6.7.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentMinorVersionsBothNeg() {
+    assertEquals(0, new AirbyteVersion("-6.-8.0-alpha").compareTo(new AirbyteVersion("-6.-7.8-alpha")));
+  }
+
+  @Test
   public void testCompareDifferentVersions() {
     assertEquals(-6, new AirbyteVersion("0.8.0-alpha").compareTo(new AirbyteVersion("6.7.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentVersionsMinorNeg() {
+    assertEquals(-6, new AirbyteVersion("0.8.0-alpha").compareTo(new AirbyteVersion("6.-8.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentVersionsNeg() {
+    assertEquals(1, new AirbyteVersion("0.8.0-alpha").compareTo(new AirbyteVersion("-6.8.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentVersionsBothNeg() {
+    assertEquals(0, new AirbyteVersion("-2.-8.0-alpha").compareTo(new AirbyteVersion("-6.-8.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentMajorMinorVersionsMinorNeg() {
+    assertEquals(-6, new AirbyteVersion("0.-8.0-alpha").compareTo(new AirbyteVersion("6.-7.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentMajorMinorVersionsMajorNeg() {
+    assertEquals(-1, new AirbyteVersion("-3.8.0-alpha").compareTo(new AirbyteVersion("6.7.8-alpha")));
+  }
+
+  @Test
+  public void testCompareDifferentMajorMinorVersionsBothNeg() {
+    assertEquals(0, new AirbyteVersion("-3.-8.0-alpha").compareTo(new AirbyteVersion("-6.-7.8-alpha")));
+  }
+
+  @Test
+  public void testCompareEqualVersions() {
+    assertEquals(0, new AirbyteVersion("6.8.0-alpha").compareTo(new AirbyteVersion("6.8.0-alpha")));
+  }
+
+  @Test
+  public void testCompareEqualVersionsMajorNeg() {
+    assertEquals(0, new AirbyteVersion("-6.8.0-alpha").compareTo(new AirbyteVersion("-6.8.0-alpha")));
+  }
+
+  @Test
+  public void testCompareEqualVersionsMinorNeg() {
+    assertEquals(0, new AirbyteVersion("6.-8.0-alpha").compareTo(new AirbyteVersion("6.-8.0-alpha")));
+  }
+
+  @Test
+  public void testCompareEqualVersionsBothNeg() {
+    assertEquals(0, new AirbyteVersion("-6.-8.0-alpha").compareTo(new AirbyteVersion("-6.-8.0-alpha")));
   }
 
   @Test
