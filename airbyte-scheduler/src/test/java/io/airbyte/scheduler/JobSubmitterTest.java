@@ -141,6 +141,21 @@ public class JobSubmitterTest {
   }
 
   @Test
+  public void testJobCreationSuccess() throws Exception {
+    doReturn(SUCCESS_OUTPUT).when(workerRun).call();
+    doReturn(Optional.of(job)).when(persistence).getNextJob();
+
+    jobSubmitter.run();
+
+    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
+    inOrder.verify(persistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, new JobOutput());
+    inOrder.verify(persistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
+    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.SUCCEEDED);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
   public void testFailure() throws Exception {
     doReturn(FAILED_OUTPUT).when(workerRun).call();
 

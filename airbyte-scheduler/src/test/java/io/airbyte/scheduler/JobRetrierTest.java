@@ -24,17 +24,17 @@
 
 package io.airbyte.scheduler;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -97,6 +97,19 @@ class JobRetrierTest {
 
     verify(persistence).listJobsWithStatus(JobStatus.INCOMPLETE);
     verify(persistence).failJob(incompleteSyncJob.getId());
+    verifyNoMoreInteractions(persistence);
+  }
+
+  @Test
+  void testTooManySpecJobFailures() throws IOException {
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSpecJob));
+    when(incompleteSpecJob.getAttemptsCount()).thenReturn(5);
+    when(incompleteSpecJob.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
+
+    jobRetrier.run();
+
+    verify(persistence).listJobsWithStatus(JobStatus.INCOMPLETE);
+    verify(persistence).failJob(incompleteSpecJob.getId());
     verifyNoMoreInteractions(persistence);
   }
 

@@ -24,11 +24,6 @@
 
 package io.airbyte.scheduler;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DataType;
@@ -44,15 +39,17 @@ import io.airbyte.scheduler.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.*;
 
 class JobSchedulerTest {
 
   private static final StandardSync STANDARD_SYNC;
+  private static final StandardSync STANDARD_SYNC_TWO;
   private static final StandardSyncSchedule STANDARD_SYNC_SCHEDULE;
   private static final long JOB_ID = 12L;
   private Job previousJob;
@@ -83,6 +80,14 @@ class JobSchedulerTest {
         .withSchema(schema)
         .withSourceId(sourceId)
         .withDestinationId(destinationId);
+
+    STANDARD_SYNC_TWO = new StandardSync()
+          .withConnectionId(connectionId)
+          .withName("presto to hudi 2")
+          .withStatus(StandardSync.Status.ACTIVE)
+          .withSchema(schema)
+          .withSourceId(sourceId)
+          .withDestinationId(destinationId);
 
     // empty. contents not needed for any of these unit tests.
     STANDARD_SYNC_SCHEDULE = new StandardSyncSchedule();
@@ -120,6 +125,24 @@ class JobSchedulerTest {
     verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE);
     verify(jobPersistence).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory).create(STANDARD_SYNC.getConnectionId());
+  }
+
+  @Test
+  public void testScheduleTwoNewJobs() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(jobPersistence.getLastReplicationJob(STANDARD_SYNC.getConnectionId()))
+            .thenReturn(Optional.of(previousJob));
+    when(scheduleJobPredicate.test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE)).thenReturn(true);
+    when(jobFactory.create(STANDARD_SYNC.getConnectionId())).thenReturn(JOB_ID);
+    when(configRepository.listStandardSyncs()).thenReturn(List.of(STANDARD_SYNC, STANDARD_SYNC_TWO));
+    when(configRepository.getStandardSyncSchedule(STANDARD_SYNC.getConnectionId())).thenReturn(STANDARD_SYNC_SCHEDULE);
+
+    scheduler.run();
+
+    verify(configRepository).listStandardSyncs();
+    verify(configRepository, times((2))).getStandardSyncSchedule(STANDARD_SYNC.getConnectionId());
+    verify(scheduleJobPredicate, times(2)).test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE);
+    verify(jobPersistence, times(2)).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
+    verify(jobFactory, times(2)).create(STANDARD_SYNC.getConnectionId());
   }
 
   @Test
