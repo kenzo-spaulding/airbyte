@@ -13,5 +13,5 @@ before_install:
   - sudo apt-get install python3.7
 
 script:
-  - ./gradlew --no-daemon build --scan --stacktrace
+  - ./gradlew --no-daemon build --parallel --scan --stacktrace
   - ./gradlew :airbyte-tests:acceptanceTests
