@@ -201,6 +201,8 @@ task composeBuild {
     def buildTag = System.getenv('VERSION') ?: 'dev'
     doFirst {
         exec {
+            commandLine 'docker', 'container', 'ls', '-a'
+            commandLine 'docker', 'image', 'ls', '-a'
             workingDir rootDir
             commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
             environment 'VERSION', buildTag
