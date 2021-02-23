@@ -7,60 +7,29 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Airbyte
+      - name: Get Code
         uses: actions/checkout@v2
 
-      # - name: Check images exist
-      #   run: ./tools/bin/check_images_exist.sh
-
-      - uses: actions/setup-java@v1
+      - name: Setup Java 14
+        uses: actions/setup-java@v1
         with:
           java-version: '14'
 
-      - uses: actions/setup-node@v1
+      - name: Setup Node 14.7
+        uses: actions/setup-node@v1
         with:
           node-version: '14.7'
 
-      - uses: actions/setup-python@v2
+      - name: Setup Python 3.7
+        uses: actions/setup-python@v2
         with:
           python-version: '3.7'
 
-      # - name: Generate Template scaffold
-      #   run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
-
-      - name: Build
+      - name: Build components
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan
 
-      - name: Build Core Docker Images
-        run: ./gradlew --no-daemon composeBuild --scan
+      - name: Build Core images & test
+        run: ./gradlew --no-daemon composeBuild test --scan
 
-      - name: Run End-to-End Acceptance Tests
+      - name: Run Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
-
-  test_docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '14'
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Build Core Docker Images and Run Tests
-        run: CORE_ONLY=true ./gradlew --no-daemon format composeBuild test -x :airbyte-webapp:test --scan
-        env:
-          GIT_REVISION: ${{ github.sha }}
-          CORE_ONLY: true
-
-      - name: Run Docker End-to-End Acceptance Tests
-        run: |
-          ./tools/bin/acceptance_test.sh
