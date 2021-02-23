@@ -202,7 +202,7 @@ task composeBuild {
     doFirst {
         exec {
             workingDir rootDir
-            commandLine 'docker-compose', 'logs', '-f', 'docker-compose.build.yaml', 'build', '--parallel'
+            commandLine 'docker-compose', '-f', 'docker-compose.yaml', '--parallel'
             environment 'VERSION', buildTag
         }
     }
