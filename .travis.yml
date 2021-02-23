@@ -1,0 +1,17 @@
+language: java
+install: skip
+
+os: linux
+dist: focal
+jdk: oraclejdk14
+
+services:
+  - docker
+
+before_install:
+  - nvm install v14.15.5
+  - sudo apt-get install python3.7
+
+script:
+  - ./gradlew --no-daemon composeBuild --scan
+  - ./tools/bin/acceptance_test.sh
