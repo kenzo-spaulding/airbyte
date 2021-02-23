@@ -12,5 +12,5 @@ before_install:
   - nvm install v14.15.5
 
 script:
-  - ./gradlew clean build
+  - ./gradlew --no-daemon build --scan
   - ./gradlew :airbyte-tests:acceptanceTests
