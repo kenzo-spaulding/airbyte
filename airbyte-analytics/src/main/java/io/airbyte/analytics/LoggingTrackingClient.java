@@ -27,32 +27,33 @@ package io.airbyte.analytics;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LoggingTrackingClient implements TrackingClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
+    private final Supplier<TrackingIdentity> identitySupplier;
 
-  private final Supplier<TrackingIdentity> identitySupplier;
+    public LoggingTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
+        this.identitySupplier = identitySupplier;
+    }
 
-  public LoggingTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
-    this.identitySupplier = identitySupplier;
-  }
+    @Override
+    public void identify() {
+        LOGGER.info("identify. userId: {}", identitySupplier.get().getCustomerId());
+    }
 
-  @Override
-  public void identify() {
-    LOGGER.info("identify. userId: {}", identitySupplier.get().getCustomerId());
-  }
+    @Override
+    public void track(String action) {
+        track(action, Collections.emptyMap());
+    }
 
-  @Override
-  public void track(String action) {
-    track(action, Collections.emptyMap());
-  }
-
-  @Override
-  public void track(String action, Map<String, Object> metadata) {
-    LOGGER.info("track. userId: {} action: {}, metadata: {}", identitySupplier.get().getCustomerId(), action, metadata);
-  }
+    @Override
+    public void track(String action, Map<String, Object> metadata) {
+        LOGGER.info("track. userId: {} action: {}, metadata: {}", identitySupplier.get().getCustomerId(), action, metadata);
+    }
 
 }
