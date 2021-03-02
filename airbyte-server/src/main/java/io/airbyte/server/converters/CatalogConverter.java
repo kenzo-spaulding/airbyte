@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class CatalogConverter {
 
-  private static io.airbyte.api.model.AirbyteStream toApi(final io.airbyte.protocol.models.AirbyteStream stream) {
+  static io.airbyte.api.model.AirbyteStream toApi(final io.airbyte.protocol.models.AirbyteStream stream) {
     return new io.airbyte.api.model.AirbyteStream()
         .name(stream.getName())
         .jsonSchema(stream.getJsonSchema())

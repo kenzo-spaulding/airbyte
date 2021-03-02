@@ -25,11 +25,18 @@
 package io.airbyte.server.converters;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
 
 class CatalogConverterTest {
 
@@ -47,6 +54,21 @@ class CatalogConverterTest {
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
     assertTrue(Enums.isCompatible(io.airbyte.config.SyncMode.class, io.airbyte.api.model.SyncMode.class));
+  }
+
+  @Test
+  void testConvertToAPIWithMocks() throws JsonProcessingException {
+    final AirbyteStream stream = mock(AirbyteStream.class);
+    JsonMapper mapper = JsonMapper.builder().build();
+
+    when(stream.getName()).thenReturn("default");
+    when(stream.getJsonSchema()).thenReturn(mapper.readTree("{}"));
+    when(stream.getSupportedSyncModes()).thenReturn(new ArrayList<>());
+    when(stream.getSourceDefinedCursor()).thenReturn(null);
+    when(stream.getDefaultCursorField()).thenReturn(null);
+
+    io.airbyte.api.model.AirbyteStream stream1 = CatalogConverter.toApi(stream);
+    assertNotNull(stream1);
   }
 
 }

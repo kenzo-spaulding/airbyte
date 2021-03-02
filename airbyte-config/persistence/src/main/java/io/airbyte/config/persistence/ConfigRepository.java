@@ -39,9 +39,13 @@ import java.util.UUID;
 
 public class ConfigRepository {
 
-  private final ConfigPersistence persistence;
+  private ConfigPersistence persistence;
 
   public ConfigRepository(ConfigPersistence persistence) {
+    this.persistence = persistence;
+  }
+
+  public void setPersistence(ConfigPersistence persistence) {
     this.persistence = persistence;
   }
 

@@ -152,7 +152,7 @@ subprojects {
         testLogging() {
             events 'failed'
             exceptionFormat 'full'
-            // showStandardStreams = true
+             showStandardStreams = true
         }
         finalizedBy jacocoTestReport
     }

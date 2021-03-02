@@ -45,8 +45,8 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   private static final Object lock = new Object();
 
-  private final JsonSchemaValidator jsonSchemaValidator;
-  private final Path storageRoot;
+  private JsonSchemaValidator jsonSchemaValidator;
+  private Path storageRoot;
 
   public DefaultConfigPersistence(final Path storageRoot) {
     this(storageRoot, new JsonSchemaValidator());
@@ -55,6 +55,11 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator) {
     this.storageRoot = storageRoot.resolve(CONFIG_DIR);
     jsonSchemaValidator = schemaValidator;
+  }
+
+  public void setStorageRoot(final Path storageRoot) {
+    this.storageRoot = storageRoot.resolve(CONFIG_DIR);
+    this.jsonSchemaValidator = new JsonSchemaValidator();
   }
 
   @Override
